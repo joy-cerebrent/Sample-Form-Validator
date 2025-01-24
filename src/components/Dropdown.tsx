@@ -1,6 +1,6 @@
 import { DropdownProps } from "@/types";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
 export default function Dropdown({
@@ -14,6 +14,8 @@ export default function Dropdown({
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // For filtering options
+  const [openUpwards, setOpenUpwards] = useState(false); // State for dropdown direction
+  const buttonRef = useRef<HTMLButtonElement>(null); // Ref for the button
 
   const handleSelect = (option: string) => {
     onChange(option);
@@ -25,8 +27,16 @@ export default function Dropdown({
     option.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const { bottom } = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      setOpenUpwards(bottom + 250 > viewportHeight); // Adjust threshold based on dropdown height
+    }
+  }, [isOpen]);
+
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left w-full">
       <div>
         <label className="text-sm font-medium">{label}</label>
 
@@ -38,6 +48,7 @@ export default function Dropdown({
           )}
           <button
             type="button"
+            ref={buttonRef}
             className={twMerge(
               "relative inline-flex w-full justify-start gap-x-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50",
               error ? "border-red-500" : "border-gray-300",
@@ -48,8 +59,9 @@ export default function Dropdown({
             aria-haspopup="true"
           >
             <label
-              className={`text-sm font-medium ${value ? "text-black" : "text-zinc-400"
-                }`}
+              className={`text-sm font-medium ${
+                value ? "text-black" : "text-zinc-400"
+              }`}
             >
               {value || "Select from the following"}
             </label>
@@ -73,7 +85,16 @@ export default function Dropdown({
             onClick={() => setIsOpen(false)}
           />
           <div
-            className="absolute left-0 right-0 z-10 mt-2 w-full origin-top rounded-md bg-white ring-1 shadow-lg ring-black/5 focus:outline-hidden"
+            className={twMerge(
+              "absolute z-10 mt-2 w-full origin-top rounded-md bg-white ring-1 shadow-lg ring-black/5 focus:outline-hidden",
+              openUpwards
+                ? "bottom-full"
+                : "mt-2"
+            )}
+            style={{
+              maxHeight: "250px", // Fixed height
+              overflowY: "auto", // Scrollable when needed
+            }}
             role="menu"
             aria-orientation="vertical"
           >
@@ -102,7 +123,9 @@ export default function Dropdown({
                   </a>
                 ))
               ) : (
-                <p className="px-4 py-2 text-sm text-gray-500">No results found</p>
+                <p className="px-4 py-2 text-sm text-gray-500">
+                  No results found
+                </p>
               )}
             </div>
           </div>
@@ -110,4 +133,4 @@ export default function Dropdown({
       )}
     </div>
   );
-};
+}
