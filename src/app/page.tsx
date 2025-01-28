@@ -2,12 +2,11 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { z } from "zod";
+import { useEffect, useState } from "react";
 
 import { Flag, LockIcon, Mail, UserIcon } from "lucide-react";
-import { signUpSchema } from "@/lib/signUpValidator";
-import { TypeSignUpSchema } from "@/types";
+import { basicDetailsSchema } from "@/lib/basicDetailsValidator";
+import { TypeBasicDetailsSchema } from "@/types";
 
 import PasswordStrengthComponent from "@/components/PasswordStrengthComponent";
 import ConfirmPasswordMatch from "@/components/ConfirmPasswordMatch";
@@ -18,6 +17,9 @@ import Input from "@/components/Input";
 import Checkbox from "@/components/Checkbox";
 import { twMerge } from "tailwind-merge";
 import FormProgressBar from "@/components/FormProgressBar";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import Button from "@/components/Button";
 
 const steps = [
   {
@@ -38,6 +40,8 @@ const steps = [
 ];
 
 export default function Home() {
+  const { user, logout, isLoading } = useAuth();
+
   const [currentStep, setCurrentStep] = useState(0);
 
   const {
@@ -48,8 +52,8 @@ export default function Home() {
     trigger,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<TypeSignUpSchema>({
-    resolver: zodResolver(signUpSchema),
+  } = useForm<TypeBasicDetailsSchema>({
+    resolver: zodResolver(basicDetailsSchema),
     defaultValues: {
       newsLetter: true,
       agreeToTerms: false,
@@ -59,7 +63,7 @@ export default function Home() {
   const password = watch("password", "");
   const confirmPassword = watch("confirmPassword", "");
 
-  const onSubmit = async (data: TypeSignUpSchema) => {
+  const onSubmit = async (data: TypeBasicDetailsSchema) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log("Form Submitted:", data);
     reset();
@@ -68,7 +72,7 @@ export default function Home() {
 
   const nextStep = async () => {
     const fields = steps[currentStep].fields;
-    const output = await trigger(fields as (keyof TypeSignUpSchema)[], { shouldFocus: true });
+    const output = await trigger(fields as (keyof TypeBasicDetailsSchema)[], { shouldFocus: true });
     if (!output) return;
 
     setCurrentStep((prev) => prev + 1);
@@ -212,11 +216,24 @@ export default function Home() {
     }
   };
 
+  if (isLoading) return <div>Loading...</div>;
+
   return (
     <div className="max-w-lg mx-auto p-6 bg-white rounded shadow-md my-6">
       <h1 className="text-2xl font-bold text-center mb-6 text-zinc-900">
-        Sign-Up Form
+        Basic Details Form
       </h1>
+
+      {user && (
+        <div className="flex items-center justify-between -mt-2 mb-4">
+          <p className="text-sm text-zinc-700 font-medium">
+            Logged in as: {user.email}
+          </p>
+          <Button onClick={logout} variant="destructive" size="sm">
+            Logout
+          </Button>
+        </div>
+      )}
 
       <FormProgressBar
         steps={steps}

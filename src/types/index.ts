@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { signUpSchema } from "@/lib/signUpValidator";
+import { basicDetailsSchema } from "@/lib/basicDetailsValidator";
 import { LucideIcon } from "lucide-react";
 
-export type TypeSignUpSchema = z.infer<typeof signUpSchema>;
+export type TypeBasicDetailsSchema = z.infer<typeof basicDetailsSchema>;
 
 export type InputFieldProps = {
   label: string;
@@ -12,7 +12,7 @@ export type InputFieldProps = {
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
   error?: string;
-  registration: ReturnType<ReturnType<typeof useForm<TypeSignUpSchema>>["register"]>;
+  registration: ReturnType<ReturnType<typeof useForm<TypeBasicDetailsSchema>>["register"]>;
 };
 
 export type TextareaProps = {
@@ -20,7 +20,7 @@ export type TextareaProps = {
   placeholder: string;
   rows?: number;
   error?: string;
-  registration: ReturnType<ReturnType<typeof useForm<TypeSignUpSchema>>["register"]>;
+  registration: ReturnType<ReturnType<typeof useForm<TypeBasicDetailsSchema>>["register"]>;
 };
 
 export type DropdownProps = {
