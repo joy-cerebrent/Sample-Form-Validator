@@ -101,6 +101,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         const data = await response.json();
+        
+        if (pathname === "/login" || pathname === "/signup") {
+          router.push("/");
+        }
+        
         setUser({ email: data.email });
       } else {
         logout();
